@@ -2,7 +2,6 @@ package at.qe.skeleton.services;
 
 import at.qe.skeleton.model.Userx;
 import java.util.Collection;
-import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -10,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import at.qe.skeleton.repositories.UserxRepository;
+import java.time.LocalDateTime;
 
 /**
  * Service for accessing and manipulating user data.
@@ -57,10 +57,10 @@ public class UserxService {
     @PreAuthorize("hasAuthority('ADMIN')")
     public Userx saveUser(Userx user) {
         if (user.isNew()) {
-            user.setCreateDate(new Date());
+            user.setCreateDate(LocalDateTime.now());
             user.setCreateUser(getAuthenticatedUser());
         } else {
-            user.setUpdateDate(new Date());
+            user.setUpdateDate(LocalDateTime.now());
             user.setUpdateUser(getAuthenticatedUser());
         }
         return userRepository.save(user);

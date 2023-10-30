@@ -1,7 +1,7 @@
 package at.qe.skeleton.configs;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +17,9 @@ public class CustomServletContextInitializer implements ServletContextInitialize
 
     @Override
     public void onStartup(ServletContext sc) throws ServletException {
-        sc.setInitParameter("com.sun.faces.forceLoadConfiguration", "true");
-        sc.setInitParameter("javax.faces.DEFAULT_SUFFIX", ".xhtml");
-        sc.setInitParameter("javax.faces.PROJECT_STAGE", "Development");
-        sc.setInitParameter("javax.faces.STATE_SAVING_METHOD", "server");
-        sc.setInitParameter("javax.faces.FACELETS_SKIP_COMMENTS", "true");
+        sc.setInitParameter("jakarta.faces.PROJECT_STAGE", "Development");
+        sc.setInitParameter("jakarta.faces.STATE_SAVING_METHOD", "server");
+        sc.setInitParameter("jakarta.faces.FACELETS_SKIP_COMMENTS", "true");
+        sc.setInitParameter("jakarta.faces.DEFAULT_SUFFIX", ".xhtml");
     }
 }

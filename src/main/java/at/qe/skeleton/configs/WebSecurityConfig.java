@@ -1,6 +1,9 @@
 package at.qe.skeleton.configs;
 
 import javax.sql.DataSource;
+
+import at.qe.skeleton.model.UserxRole;
+import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,45 +25,54 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+    private static final String ADMIN = UserxRole.ADMIN.name();
+    private static final String MANAGER = UserxRole.MANAGER.name();
+    private static final String EMPLOYEE = UserxRole.EMPLOYEE.name();
+    private static final String LOGIN = "/login.xhtml";
+    private static final String ACCESSDENIED = "/error/access_denied.xhtml";
+    
     @Autowired
     DataSource dataSource;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        
+        try {   
 
-        http.csrf().disable();
-
-        http.headers().frameOptions().disable(); // needed for H2 console
-
-        http.logout()
-                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .invalidateHttpSession(true)
+            http
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(new AntPathRequestMatcher("/")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/**.jsf")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/jakarta.faces.resource/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/error/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasAnyAuthority("ADMIN")
+                .requestMatchers(new AntPathRequestMatcher("/secured/**")).hasAnyAuthority(ADMIN, MANAGER, EMPLOYEE)
+                .anyRequest().authenticated()
+            )
+            // :TODO: user failureUrl(/login.xhtml?error) and make sure that a corresponding message is displayed
+            .formLogin(form -> form
+                .loginPage(LOGIN)
+                .permitAll()
+                .defaultSuccessUrl("/secured/welcome.xhtml")
+                .loginProcessingUrl("/login")
+                .successForwardUrl("/secured/welcome.xhtml")
+            )
+            .logout(logout -> logout
+                .logoutSuccessUrl(LOGIN)
                 .deleteCookies("JSESSIONID")
-                .logoutSuccessUrl("/login.xhtml");
+                .invalidateHttpSession(true)
+                .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
+            )
+            .sessionManagement(session -> session
+                .invalidSessionUrl("/error/invalid_session.xhtml")
+            );
 
-        http.authorizeHttpRequests()
-            //Permit access to the H2 console
-            .antMatchers("/h2-console/**").permitAll()
-            //Permit access for all to error pages
-            .antMatchers("/error/**")
-            .permitAll()
-            // Only access with admin role
-            .antMatchers("/admin/**")
-            .hasAnyAuthority("ADMIN")
-            //Permit access only for some roles
-            .antMatchers("/secured/**")
-            .hasAnyAuthority("ADMIN", "MANAGER", "EMPLOYEE")
-            .and().formLogin()
-            .loginPage("/login.xhtml")
-            .loginProcessingUrl("/login")
-            .defaultSuccessUrl("/secured/welcome.xhtml");
-                
-        // :TODO: user failureUrl(/login.xhtml?error) and make sure that a corresponding message is displayed
- 
-        http.exceptionHandling().accessDeniedPage("/error/access_denied.xhtml");
-        http.sessionManagement().invalidSessionUrl("/error/invalid_session.xhtml");
-
-        return http.build();
+            return http.build();
+        } catch (Exception ex) {
+            throw new BeanCreationException("Wrong spring security configuration", ex);
+        }
     }
 
     @Autowired
