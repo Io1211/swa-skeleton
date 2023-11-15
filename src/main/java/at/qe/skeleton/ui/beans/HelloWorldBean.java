@@ -19,6 +19,6 @@ public class HelloWorldBean {
      * @return hello-world-string
      */
     public String getHello() {
-        return "Hello from a JSF-managed bean!";
+        return "Hello from a JSF-managed bean! I am in.";
     }
 }
