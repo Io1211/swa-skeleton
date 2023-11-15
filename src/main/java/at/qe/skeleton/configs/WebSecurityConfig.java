@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -83,9 +84,12 @@ public class WebSecurityConfig {
                 .authoritiesByUsernameQuery("select userx_username, roles from userx_userx_role where userx_username=?");
     }
 
+
+    // :TODO: use proper passwordEncoder and do not store passwords in plain text
     @Bean
     public static PasswordEncoder passwordEncoder() {
-        // :TODO: use proper passwordEncoder and do not store passwords in plain text
-        return NoOpPasswordEncoder.getInstance();
+        PasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(15);
+
+        return bCryptPasswordEncoder;
     }
 }
